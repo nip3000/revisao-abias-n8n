@@ -1,0 +1,25 @@
+{
+  "name": "Saldo Positivo",
+  "short_name": "Saldo Positi",
+  "description": "Gerencia suas finanças de forma simplificada",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#4ECDC4",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "https://napqmdzxzpxfyxegqxjp.supabase.co/storage/v1/object/public/uploads/logos/1753745662359-qjxzpphdfsk.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://napqmdzxzpxfyxegqxjp.supabase.co/storage/v1/object/public/uploads/logos/1753745662359-qjxzpphdfsk.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

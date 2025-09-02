@@ -1,0 +1,238 @@
+
+/* Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 220 85% 20%; /* Saldo Positivo blue - navy blue from logo */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 120 100% 40%; /* Saldo Positivo green - vibrant green from logo */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 120 95% 30%; /* Darker green accent based on logo */
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 192 47% 34%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 220 85% 20%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 120 100% 40%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 220 85% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 85% 15%;
+    --sidebar-ring: 120 100% 40%;
+  }
+
+  .dark {
+    /* Dark mode */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 120 100% 40%; /* Saldo Positivo green - vibrant green from logo */
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 220 85% 20%; /* Saldo Positivo blue - navy blue from logo */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 120 95% 30%; /* Darker green accent based on logo */
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 174 66% 55%;
+
+    --sidebar-background: 220 85% 10%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 120 100% 40%; 
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 220 85% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 85% 8%;
+    --sidebar-ring: 120 100% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border transition-colors duration-200;
+  }
+
+  html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Saldo Positivo gradient backgrounds */
+  .bg-gradient-saldo {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--primary)) 100%);
+  }
+
+  .bg-gradient-saldo-subtle {
+    background: linear-gradient(135deg, hsl(var(--secondary) / 0.1) 0%, hsl(var(--primary) / 0.1) 100%);
+  }
+
+  .bg-gradient-saldo-reverse {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/40 rounded-full hover:bg-muted-foreground/60 transition-colors;
+  }
+
+  /* Custom styles for Saldo Positivo */
+  .card-gradient {
+    @apply bg-gradient-to-br from-secondary to-primary text-white;
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden bg-muted/50;
+  }
+
+  .progress-bar-value {
+    @apply h-full animate-progress-fill;
+  }
+  
+  /* Glass effect */
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl;
+  }
+  
+  .dark .glass {
+    @apply bg-black/20 border-white/10;
+  }
+  
+  /* Hover effects */
+  .hover-card {
+    @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+  }
+
+  /* Smooth animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Custom hover effects */
+.hover\:bg-accent:hover {
+  background-color: hsl(var(--accent));
+}
+
+.hover\:bg-accent\/80:hover {
+  background-color: hsl(var(--accent) / 0.8);
+}
+
+/* Enhanced card shadows */
+.shadow-soft {
+  box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
