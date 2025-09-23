@@ -928,6 +928,14 @@ export type Database = {
         Args: { p_value: string }
         Returns: string
       }
+      fix_credit_card_transactions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_purchases: number
+          errors: string[]
+          fixed_transactions: number
+        }[]
+      }
       generate_upload_path: {
         Args: { file_extension: string; user_id: string }
         Returns: string
