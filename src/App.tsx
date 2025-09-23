@@ -45,7 +45,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange={false}>
         <TooltipProvider>
           <BrandingProvider>
             <PreferencesProvider>

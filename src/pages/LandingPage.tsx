@@ -68,8 +68,15 @@ const LandingPage = () => {
     };
   }, [lastUpdated]); // Reagir a mudanças no branding
 
-  // Mostrar um loading mínimo enquanto carrega o tema para evitar flash
-  if (!isThemeLoaded || brandingLoading) {
+  // Mostrar um loading mínimo apenas por um tempo limitado
+  if (!isThemeLoaded && brandingLoading) {
+    // Timeout para garantir que o preview apareça mesmo se o branding falhar
+    setTimeout(() => {
+      if (!isThemeLoaded) {
+        setIsThemeLoaded(true);
+      }
+    }, 2000); // 2 segundos máximo de loading
+    
     return (
       <div className="min-h-screen w-full bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center">
         <div className="animate-pulse">
