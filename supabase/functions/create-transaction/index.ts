@@ -1,40 +1,55 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.0'
 
-serve(async (req) => {
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+interface TransactionRequest {
+  type: 'income' | 'expense';
+  amount: number;
+  category_id?: string;
+  category?: string;
+  description?: string;
+  date: string;
+  goal_id?: string;
+  account_id?: string;
+  credit_card_id?: string;
+  user_id: string;
+}
+
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    // Parse request body
-    const requestData = await req.json();
-    console.log("n8n transaction request:", requestData);
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { 
+        status: 405, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
 
-    // Initialize Supabase client
+  try {
+    // Initialize Supabase client with service role key
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Extract and validate required fields
-    const {
-      type,
-      amount,
-      description,
-      date,
-      category_id,
-      user_id,
-      account_id,
-      credit_card_id
-    } = requestData;
+    const transactionData: TransactionRequest = await req.json();
+    
+    console.log('n8n transaction request:', transactionData);
 
     // Validate required fields
-    if (!type || !amount || !user_id) {
+    if (!transactionData.user_id || !transactionData.type || !transactionData.amount) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: type, amount, user_id' }),
+        JSON.stringify({ error: 'Missing required fields: user_id, type, amount' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -42,42 +57,49 @@ serve(async (req) => {
       );
     }
 
-    // Set auth context to the user_id
-    const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(user_id);
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid user_id' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Process transaction based on type and credit card
-    if (type === 'expense' && credit_card_id) {
-      console.log("Processing credit card transaction");
+    // If this is an expense with credit_card_id, create a credit card purchase
+    if (transactionData.type === 'expense' && transactionData.credit_card_id) {
+      console.log('Creating credit card purchase for n8n transaction');
       
+      // Validate that the credit card belongs to the user
+      const { data: creditCard, error: cardError } = await supabase
+        .from('credit_cards')
+        .select('id, user_id')
+        .eq('id', transactionData.credit_card_id)
+        .eq('user_id', transactionData.user_id)
+        .single();
+
+      if (cardError || !creditCard) {
+        console.error('Credit card validation error:', cardError);
+        return new Response(
+          JSON.stringify({ error: 'Invalid credit card or access denied' }),
+          { 
+            status: 403, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
       // Create credit card purchase
       const { data: purchase, error: purchaseError } = await supabase
         .from('credit_card_purchases')
         .insert({
-          card_id: credit_card_id,
-          description: description || 'Compra via WhatsApp',
-          amount: amount,
-          purchase_date: date ? date.split('T')[0] : new Date().toISOString().split('T')[0],
+          card_id: transactionData.credit_card_id,
+          description: transactionData.description || 'Compra via n8n',
+          amount: transactionData.amount,
+          purchase_date: transactionData.date.split('T')[0],
           installments: 1,
-          installment_amount: amount,
+          installment_amount: transactionData.amount,
           is_installment: false,
-          category_id: category_id
+          category_id: transactionData.category_id
         })
         .select()
         .single();
 
       if (purchaseError) {
-        console.error("Error creating credit card purchase:", purchaseError);
+        console.error('Error creating credit card purchase:', purchaseError);
         return new Response(
-          JSON.stringify({ error: 'Failed to create credit card purchase', details: purchaseError }),
+          JSON.stringify({ error: 'Failed to create credit card purchase', details: purchaseError.message }),
           { 
             status: 500, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -85,107 +107,137 @@ serve(async (req) => {
         );
       }
 
-      // Auto-generate bills for the credit card
+      // Generate bills for the credit card
       const { error: billError } = await supabase.rpc('auto_generate_credit_card_bills', {
-        card_id_param: credit_card_id
+        card_id_param: transactionData.credit_card_id
       });
 
       if (billError) {
-        console.error("Error generating credit card bills:", billError);
+        console.error('Error generating credit card bills:', billError);
+        // Don't fail the request, just log the error
       }
 
+      console.log('Credit card purchase created successfully:', purchase.id);
       return new Response(
         JSON.stringify({ 
           success: true, 
           type: 'credit_card_purchase',
-          data: purchase 
+          purchase_id: purchase.id,
+          message: 'Credit card purchase created successfully' 
         }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    } else {
-      console.log("Processing regular transaction");
-      
-      // Get default account if not provided
-      let finalAccountId = account_id;
-      if (!finalAccountId) {
-        const { data: defaultAccount } = await supabase.rpc('get_default_account_id', {
-          p_user_id: user_id
-        });
-        
-        if (!defaultAccount) {
-          const { data: createdAccount } = await supabase.rpc('create_default_account_for_user', {
-            p_user_id: user_id
-          });
-          finalAccountId = createdAccount;
-        } else {
-          finalAccountId = defaultAccount;
-        }
-      }
-
-      // Get category ID if not provided or find default
-      let finalCategoryId = category_id;
-      if (!finalCategoryId) {
-        const { data: defaultCategory } = await supabase
-          .from('poupeja_categories')
-          .select('id')
-          .eq('name', 'Outros')
-          .eq('type', type)
-          .eq('user_id', user_id)
-          .single();
-        
-        if (defaultCategory) {
-          finalCategoryId = defaultCategory.id;
-        }
-      }
-
-      // Create regular transaction
-      const { data: transaction, error: transactionError } = await supabase
-        .from('poupeja_transactions')
-        .insert({
-          type: type,
-          amount: amount,
-          category_id: finalCategoryId,
-          description: description || '',
-          date: date ? date.split('T')[0] : new Date().toISOString().split('T')[0],
-          account_id: finalAccountId,
-          user_id: user_id
-        })
-        .select(`
-          *,
-          category:poupeja_categories(id, name, icon, color, type),
-          account:poupeja_accounts(id, name, bank_name)
-        `)
-        .single();
-
-      if (transactionError) {
-        console.error("Error creating transaction:", transactionError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to create transaction', details: transactionError }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          type: 'transaction',
-          data: transaction 
-        }),
-        { 
+          status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
 
-  } catch (error) {
-    console.error("Unexpected error:", error);
+    // For regular transactions (income or expense without credit card)
+    console.log('Creating regular transaction for n8n');
+
+    // Get or validate category
+    let categoryId = transactionData.category_id;
+    
+    if (!categoryId && transactionData.category) {
+      // Try to find category by name
+      const { data: categoryByName } = await supabase
+        .from('poupeja_categories')
+        .select('id')
+        .eq('name', transactionData.category)
+        .eq('type', transactionData.type)
+        .eq('user_id', transactionData.user_id)
+        .single();
+      
+      if (categoryByName) {
+        categoryId = categoryByName.id;
+      }
+    }
+
+    if (!categoryId) {
+      // Fallback to "Outros" category
+      const { data: defaultCategory } = await supabase
+        .from('poupeja_categories')
+        .select('id')
+        .eq('name', 'Outros')
+        .eq('type', transactionData.type)
+        .eq('user_id', transactionData.user_id)
+        .single();
+      
+      if (defaultCategory) {
+        categoryId = defaultCategory.id;
+      } else {
+        return new Response(
+          JSON.stringify({ error: `No valid category found for ${transactionData.type}` }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+    }
+
+    // Create the transaction
+    const { data: transaction, error: transactionError } = await supabase
+      .from('poupeja_transactions')
+      .insert({
+        type: transactionData.type,
+        amount: transactionData.amount,
+        category_id: categoryId,
+        description: transactionData.description || '',
+        date: transactionData.date,
+        goal_id: transactionData.goal_id || null,
+        account_id: transactionData.account_id || null,
+        user_id: transactionData.user_id
+      })
+      .select()
+      .single();
+
+    if (transactionError) {
+      console.error('Error creating transaction:', transactionError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to create transaction', details: transactionError.message }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // If this is an income transaction linked to a goal, update the goal's current amount
+    if (transactionData.type === 'income' && transactionData.goal_id) {
+      console.log('Updating goal current amount for income transaction');
+      const { error: goalError } = await supabase.rpc('update_goal_amount', {
+        p_goal_id: transactionData.goal_id,
+        p_amount_change: transactionData.amount
+      });
+      
+      if (goalError) {
+        console.error('Error updating goal amount:', goalError);
+        // Don't fail the request, just log the error
+      }
+    }
+
+    console.log('Transaction created successfully:', transaction.id);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ 
+        success: true, 
+        type: 'transaction',
+        transaction_id: transaction.id,
+        message: 'Transaction created successfully' 
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+
+  } catch (error) {
+    console.error('Error in create-transaction function:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Internal server error', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
