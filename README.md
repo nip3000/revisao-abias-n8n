@@ -1,4 +1,4 @@
-# 💰 PoupeJá - Sistema Completo de Gestão Financeira
+# 💰 Saldo Positivo - Sistema Completo de Gestão Financeira
 
 Sistema completo de gestão financeira pessoal com foco em facilidade de uso, automação e redistribuição para múltiplas organizações.
 
@@ -70,8 +70,8 @@ Sistema completo de gestão financeira pessoal com foco em facilidade de uso, au
 3. Clone seu fork localmente:
 
 ```bash
-git clone https://github.com/SEU_USUARIO/poupeja.git
-cd poupeja
+git clone https://github.com/SEU_USUARIO/saldo-positivo.git
+cd saldo-positivo
 ```
 
 ### 3. Configurar Secrets do GitHub
@@ -152,7 +152,7 @@ npm run dev
 ## 📁 Estrutura do Projeto
 
 ```
-poupeja/
+saldo-positivo/
 ├── src/
 │   ├── components/          # Componentes React
 │   │   ├── admin/          # Painel administrativo
@@ -181,7 +181,7 @@ poupeja/
 
 ```bash
 # Adicionar repositório original como remote
-git remote add upstream https://github.com/REPO_ORIGINAL/poupeja.git
+git remote add upstream https://github.com/REPO_ORIGINAL/saldo-positivo.git
 
 # Buscar atualizações
 git fetch upstream
@@ -254,7 +254,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 - **Issues**: [GitHub Issues](./issues)
 - **Discussões**: [GitHub Discussions](./discussions)
-- **Email**: support@poupeja.com
+- **Email**: contato@saldopositivo.com
 
 ## 🏆 Créditos
 
