@@ -900,10 +900,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      confirm_user_email: {
-        Args: { user_email: string }
-        Returns: boolean
-      }
+      confirm_user_email: { Args: { user_email: string }; Returns: boolean }
       create_default_account_for_user: {
         Args: { p_user_id?: string }
         Returns: string
@@ -916,20 +913,14 @@ export type Database = {
         Args: { admin_email?: string }
         Returns: undefined
       }
-      create_update_goal_amount_function: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      create_update_goal_amount_function: { Args: never; Returns: undefined }
       decrypt_setting_value: {
         Args: { p_encrypted_value: string }
         Returns: string
       }
-      encrypt_setting_value: {
-        Args: { p_value: string }
-        Returns: string
-      }
+      encrypt_setting_value: { Args: { p_value: string }; Returns: string }
       fix_credit_card_transactions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_purchases: number
           errors: string[]
@@ -940,14 +931,8 @@ export type Database = {
         Args: { file_extension: string; user_id: string }
         Returns: string
       }
-      get_default_account_id: {
-        Args: { p_user_id?: string }
-        Returns: string
-      }
-      get_file_public_url: {
-        Args: { file_path: string }
-        Returns: string
-      }
+      get_default_account_id: { Args: { p_user_id?: string }; Returns: string }
+      get_file_public_url: { Args: { file_path: string }; Returns: string }
       get_setting: {
         Args: { p_category: string; p_key: string }
         Returns: string
@@ -976,10 +961,7 @@ export type Database = {
         Args: { target_email: string }
         Returns: boolean
       }
-      grant_admin_role: {
-        Args: { target_email: string }
-        Returns: boolean
-      }
+      grant_admin_role: { Args: { target_email: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -987,16 +969,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { user_id?: string }
-        Returns: boolean
-      }
-      migrate_existing_auth_users: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      is_admin: { Args: { user_id?: string }; Returns: boolean }
+      migrate_existing_auth_users: { Args: never; Returns: undefined }
       recover_missing_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           recovered_count: number
         }[]
@@ -1020,17 +996,14 @@ export type Database = {
         Returns: boolean
       }
       test_trigger_system: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           details: string
           status: string
           test_name: string
         }[]
       }
-      test_user_creation_system: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      test_user_creation_system: { Args: never; Returns: string }
       update_credit_card_limits: {
         Args: { card_id_param: string }
         Returns: undefined
@@ -1065,7 +1038,7 @@ export type Database = {
         Returns: boolean
       }
       verify_installation: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           component: string
           details: string
